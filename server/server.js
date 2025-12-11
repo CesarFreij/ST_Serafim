@@ -1,9 +1,15 @@
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc.js';
+import timezone from 'dayjs/plugin/timezone.js';
 const express = require("express");
 const cors = require("cors");
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const fs = require('fs');
 require('dotenv').config();
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const User = require('./models/User');
 
@@ -88,21 +94,13 @@ app.post('/add-points', async (req, res) => {
     const user = await User.findOne({ username });
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const now = new Date();
-    now.setHours(now.getHours() + 3);
+    const now = dayjs().tz("Asia/Damascus");
 
     const lastClickForTodo = user.todosClicked.get(todo);
     if (lastClickForTodo) {
-        const last = new Date(lastClickForTodo);
-        last.setHours(last.getHours());
+        const last = dayjs(lastClickForTodo).tz("Asia/Damascus");
 
-        const today = new Date();
-        today.setHours(3, 0, 0, 0);
-
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-
-        if (last >= today && last < tomorrow) {
+        if (last.isSame(now, 'day')) {
             return res.status(400).json({
                 message: `لا يمكنك أن تضغط على زر ${todo} غير مرة في اليوم`
             });
@@ -110,13 +108,12 @@ app.post('/add-points', async (req, res) => {
     }
 
     user.points += points;
-    user.todosClicked.set(todo, now);
+    user.todosClicked.set(todo, now.toDate());
 
     await user.save();
 
     res.json({ message: `تمت إضافة ${points}$ إلى رصيدك!`, points: user.points });
 });
-
 app.post("/quotes-login", (req, res) => {
     const { username, password } = req.body;
     if (username === ADMIN_USER && password === ADMIN_PASS) {
