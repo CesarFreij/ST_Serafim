@@ -94,7 +94,7 @@ app.post('/add-points', async (req, res) => {
     const lastClickForTodo = user.todosClicked.get(todo);
     if (lastClickForTodo) {
         const last = new Date(lastClickForTodo);
-        last.setHours(last.getHours());
+        last.setHours(last.getHours() + 3);
 
         const today = new Date();
         today.setHours(3, 0, 0, 0);
