@@ -83,9 +83,13 @@ app.post('/login', async (req, res) => {
 
 app.get('/daily-quote', (req, res) => {
     const data = readQuotes();
-    const now = Date.now() + (3 * 60 * 60 * 1000); // UTC+3
-    const today = Math.floor(now / (1000 * 60 * 60 * 24) % data.quotes.length);
-    res.json({ quote: data.quotes[today] });
+
+    const syriaTime = dayjs().tz("Asia/Damascus");
+    const dayOfYear = syriaTime.dayOfYear();
+
+    const index = dayOfYear % data.quotes.length;
+
+    res.json({ quote: data.quotes[index] });
 });
 
 app.post('/add-points', async (req, res) => {
