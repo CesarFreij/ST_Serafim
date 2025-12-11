@@ -6,11 +6,13 @@ import "../mainPage/assets/css/fontawesome-all.min.css";
 import "../mainPage/assets/css/noscript.css";
 import api from '../api/axios'
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 
 function ProfileLanding({username: propUsername}) {
     let points = 0;
     const [username, setUsername] = useState(propUsername || "");
     const [verse, setVerse] = useState("");
+    const [isLoading, setIsloading] = useState(false);
     const navigate = useNavigate();
     const { enqueueSnackbar } = useSnackbar();
     useEffect(() => {
@@ -61,6 +63,7 @@ function ProfileLanding({username: propUsername}) {
             }
 
         try {
+            setIsloading(true);
             const response = await api.post('/add-points', {
                 username: sessionStorage.getItem("username"),
                 points,
@@ -73,7 +76,9 @@ function ProfileLanding({username: propUsername}) {
             } else {
                 enqueueSnackbar("صار خطأ بالسيرفر", { variant: "error", style:{width: 'fit-content'}});
             }
-        }        
+        } finally {
+            setIsloading(false);
+        }    
     }
 
     function handleLogout() {
@@ -110,6 +115,7 @@ function ProfileLanding({username: propUsername}) {
             <div id="main">
                 {/* Header */}
                 <header id="header">
+                    {isLoading ? <CircularProgress sx={{ color: "#ffa5004f" }}/> : ''}
                     <h1>{username}</h1>
                     <nav>
                         <ul>

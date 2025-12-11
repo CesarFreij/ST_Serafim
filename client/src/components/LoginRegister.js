@@ -4,6 +4,8 @@ import "../login/css/login.css";
 import "../login/css/all.min.css";
 import api from '../api/axios';
 import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
+
 
 const LoginRegister = ({setUsername}) => {
     const navigate = useNavigate();
@@ -21,10 +23,13 @@ const LoginRegister = ({setUsername}) => {
     const [showPasswordCon, setShowPasswordCon] = useState(false);
 
     const [errorMsg, setErrorMsg] = useState("");
+    
+    const [isLoading, setIsloading] = useState(false);
 
     async function handleLogin(e) {
         e.preventDefault();
         try {
+            setIsloading(true);
             await api.post('/login', {
                 username: loginUser,
                 password: loginPass,
@@ -37,11 +42,14 @@ const LoginRegister = ({setUsername}) => {
             if(error.response?.data?.error)
                 setErrorMsg(error.response.data.error);
             setTimeout(() => setErrorMsg(""), 3000);
+        } finally {
+            setIsloading(false);
         }
     }
 
     async function handleRegister(e) {
         e.preventDefault();
+        setIsloading(true);
         try {
             if(regPass !== regPassCon)
                 throw new Error('كلمة المرور غير متطابقة!')
@@ -59,6 +67,8 @@ const LoginRegister = ({setUsername}) => {
             else
                 setErrorMsg(error.message);
             setTimeout(_ => setErrorMsg(""), 3000);
+        } finally {
+            setIsloading(false);
         }
     }
 
@@ -89,7 +99,7 @@ const LoginRegister = ({setUsername}) => {
             <div className={`form-box login ${isLogin ? "active" : ""}`}>
                 <form onSubmit={handleLogin}>
                 <h1>تسجيل الدخول</h1>
-
+                {isLoading ? <CircularProgress/> : ''}
                 <div className="input-box">
                     <input type="text" name="username" placeholder="اسم المستخدم" required
                     value={loginUser} onChange={e => setLoginUser(e.target.value)}/>
@@ -121,6 +131,7 @@ const LoginRegister = ({setUsername}) => {
             <div className={`form-box register ${!isLogin ? "active" : ""}`}>
                 <form onSubmit={handleRegister}>
                 <h1>تسجيل</h1>
+                {isLoading ? <CircularProgress/> : ''}
                 <div className="input-box">
                     <input type="text" name="username" placeholder="اسم المستخدم" required 
                     value={regUser} onChange={e => setRegUser(e.target.value)}/>
