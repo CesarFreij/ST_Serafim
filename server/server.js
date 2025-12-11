@@ -94,11 +94,11 @@ app.post('/add-points', async (req, res) => {
     const user = await User.findOne({ username });
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const now = dayjs().tz("Asia/Damascus");
+    const now = dayjs().tz("Asia/Damascus").startOf('day');
 
     const lastClickForTodo = user.todosClicked.get(todo);
     if (lastClickForTodo) {
-        const last = dayjs(lastClickForTodo).tz("Asia/Damascus");
+        const last = dayjs(lastClickForTodo).tz("Asia/Damascus").startOf('day');
 
         if (last.isSame(now, 'day')) {
             return res.status(400).json({
@@ -114,6 +114,7 @@ app.post('/add-points', async (req, res) => {
 
     res.json({ message: `تمت إضافة ${points}$ إلى رصيدك!`, points: user.points });
 });
+
 app.post("/quotes-login", (req, res) => {
     const { username, password } = req.body;
     if (username === ADMIN_USER && password === ADMIN_PASS) {
