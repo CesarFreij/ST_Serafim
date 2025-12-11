@@ -1,11 +1,11 @@
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc.js';
-import timezone from 'dayjs/plugin/timezone.js';
 const express = require("express");
 const cors = require("cors");
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const fs = require('fs');
+const dayjs = require("dayjs");
+const utc = require("dayjs/plugin/utc");
+const timezone = require("dayjs/plugin/timezone");
 require('dotenv').config();
 
 dayjs.extend(utc);
