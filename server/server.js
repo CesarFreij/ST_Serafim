@@ -94,21 +94,17 @@ app.post('/add-points', async (req, res) => {
     const user = await User.findOne({ username });
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const now = dayjs().tz("Asia/Damascus").startOf('day');
+    const today = dayjs().tz("Asia/Damascus").format('YYYY-MM-DD');
 
     const lastClickForTodo = user.todosClicked.get(todo);
-    if (lastClickForTodo) {
-        const last = dayjs(lastClickForTodo).tz("Asia/Damascus").startOf('day');
-
-        if (last.isSame(now, 'day')) {
-            return res.status(400).json({
-                message: `لا يمكنك أن تضغط على زر ${todo} غير مرة في اليوم`
-            });
-        }
+    if (lastClickForTodo === today) {
+        return res.status(400).json({
+            message: `لا يمكنك أن تضغط على زر ${todo} غير مرة في اليوم`
+        });
     }
 
     user.points += points;
-    user.todosClicked.set(todo, now.toDate());
+    user.todosClicked.set(todo, today);
 
     await user.save();
 
