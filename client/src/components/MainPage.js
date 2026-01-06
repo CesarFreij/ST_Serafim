@@ -7,6 +7,9 @@ import "../mainPage/assets/css/noscript.css";
 import api from '../api/axios'
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogTitle from '@mui/material/DialogTitle';
 
 function ProfileLanding({username: propUsername}) {
     let points = 0;
@@ -15,6 +18,10 @@ function ProfileLanding({username: propUsername}) {
     const [isLoading, setIsloading] = useState(false);
     const navigate = useNavigate();
     const { enqueueSnackbar } = useSnackbar();
+    const [point, setPoints] = useState([]);
+    const [OpenPoints, setOpenPoints] = useState(false);
+
+    const handleOpenPoints = _ => setOpenPoints(false);
     useEffect(() => {
         async function fetchVerse() {
             const quote = await getVerse();
@@ -96,6 +103,22 @@ function ProfileLanding({username: propUsername}) {
         }
     }
 
+    async function handleGetPoints() {
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        useEffect(() => {
+            const fetchPoints = async () => {
+                try {
+                    const response = await api.get('/get-points');
+                    setPoints(response.data);
+                } catch (error) {
+                    console.error('Error fetching points:', error);
+                }
+            };
+            fetchPoints();
+        }, []);
+        setOpenPoints(true);
+    }
+
     return (
         <div id="wrapper">
             <div id="bg"></div>
@@ -113,6 +136,21 @@ function ProfileLanding({username: propUsername}) {
                 </p>
 
             <div id="main">
+                <Dialog
+                    open={OpenPoints}
+                    onClose={handleOpenPoints}
+                    aria-labelledby="alert-dialog-title"
+                    aria-describedby="alert-dialog-description"
+                    disableEnforceFocus
+                    disableRestoreFocus
+                    >
+                    <DialogTitle id="alert-dialog-title">
+                        {`!لديك $${point} في رصيدك`}
+                    </DialogTitle>
+                    <DialogActions sx={{display: 'flex', justifyContent: 'center'}}>
+                        <Button onClick={_ => setOpenPoints(false)} sx={{color: '#ffa600ff'}}>تم</Button>
+                    </DialogActions>
+                </Dialog>
                 {/* Header */}
                 <header id="header">
                     {isLoading ? <CircularProgress sx={{ color: "#ffa5004f" }}/> : ''}
@@ -149,10 +187,13 @@ function ProfileLanding({username: propUsername}) {
                         </li>
                         </ul>
                     </nav>
-                    <Button onClick={handleLogout} sx={{color: "white"}}>
-                        تسجيل الخروج
-                    </Button>
                 </header>
+                <Button onClick={handleLogout} sx={{color: "white", position: 'absolute', bottom: 10, left: 10}}>
+                    تسجيل الخروج
+                </Button>
+                <Button onClick={handleGetPoints} sx={{color: "white", position: 'absolute', bottom: 10, right: 10}}>
+                    رؤية نقاطي
+                </Button>
             </div>
         </div>
     );

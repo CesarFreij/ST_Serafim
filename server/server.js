@@ -14,6 +14,16 @@ dayjs.extend(timezone);
 const User = require('./models/User');
 
 const app = express();
+
+// Endpoint to get points from the database
+app.get('/get-points', async (req, res) => {
+    try {
+        const users = await User.find({}, 'username points'); // Fetch username and points
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching points', error });
+    }
+});
 const port = process.env.PORT || 5000;
 
 app.use(cors());
@@ -110,6 +120,10 @@ app.post('/add-points', async (req, res) => {
 
     res.json({ message: `تمت إضافة ${points}$ إلى رصيدك!`, points: user.points });
 });
+
+app.get('', (req, res) => {
+    const points = res.body
+})
 
 app.post("/quotes-login", (req, res) => {
     const { username, password } = req.body;
