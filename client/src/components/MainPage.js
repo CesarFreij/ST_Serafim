@@ -16,6 +16,7 @@ function ProfileLanding({username: propUsername}) {
     const [username, setUsername] = useState(propUsername || "");
     const [verse, setVerse] = useState("");
     const [isLoading, setIsloading] = useState(false);
+    const [isLoadingPoints, setIsloadingPoints] = useState(false);
     const navigate = useNavigate();
     const { enqueueSnackbar } = useSnackbar();
     const [point, setPoints] = useState([]);
@@ -103,23 +104,25 @@ function ProfileLanding({username: propUsername}) {
         }
     }
 
-    async function handleGetPoints() {
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        useEffect(() => {
-            const fetchPoints = async () => {
-                try {
-                    const response = await api.get('/get-points');
-                    setPoints(response.data);
-                } catch (error) {
-                    console.error('Error fetching points:', error);
-                }
-            };
-            fetchPoints();
-        }, []);
+async function handleGetPoints(username) {
+    try {
+        setIsloadingPoints(true);
         setOpenPoints(true);
-    }
+        
+        const response = await api.get('/get-points', {
+            params: { username }
+        });
 
-    return (
+        setPoints(response.data.points);
+
+    } catch (error) {
+        console.error('Error fetching points:', error);
+    } finally {
+        setIsloadingPoints(false);
+    }
+}
+
+return (
         <div id="wrapper">
             <div id="bg"></div>
             <div id="overlay"></div>
@@ -145,7 +148,8 @@ function ProfileLanding({username: propUsername}) {
                     disableRestoreFocus
                     >
                     <DialogTitle id="alert-dialog-title">
-                        {`!لديك $${point} في رصيدك`}
+                        <CircularProgress sx={{ display: isLoadingPoints ? 'block' : 'none', color: "#ffa600ff"}} />
+                        {point}
                     </DialogTitle>
                     <DialogActions sx={{display: 'flex', justifyContent: 'center'}}>
                         <Button onClick={_ => setOpenPoints(false)} sx={{color: '#ffa600ff'}}>تم</Button>
@@ -191,7 +195,7 @@ function ProfileLanding({username: propUsername}) {
                 <Button onClick={handleLogout} sx={{color: "white", position: 'absolute', bottom: 10, left: 10}}>
                     تسجيل الخروج
                 </Button>
-                <Button onClick={handleGetPoints} sx={{color: "white", position: 'absolute', bottom: 10, right: 10}}>
+                <Button onClick={_ => handleGetPoints(username)} sx={{color: "white", position: 'absolute', bottom: 10, right: 10}}>
                     رؤية نقاطي
                 </Button>
             </div>

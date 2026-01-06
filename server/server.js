@@ -15,15 +15,21 @@ const User = require('./models/User');
 
 const app = express();
 
-// Endpoint to get points from the database
 app.get('/get-points', async (req, res) => {
+    const { username } = req.query;
+
+    if (!username) return res.status(400).json({ message: "Username is required" });
+
     try {
-        const users = await User.find({}, 'username points'); // Fetch username and points
-        res.json(users);
+        const user = await User.findOne({ username });
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        res.json({ points: `!لديك $${user.points} في رصيدك` });
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching points', error });
+        res.status(500).json({ message: "Error fetching points", error });
     }
 });
+
 const port = process.env.PORT || 5000;
 
 app.use(cors());
