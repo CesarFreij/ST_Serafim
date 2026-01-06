@@ -14,6 +14,8 @@ dayjs.extend(timezone);
 const User = require('./models/User');
 
 const app = express();
+app.use(cors());
+
 
 app.get('/get-points', async (req, res) => {
     const { username } = req.query;
