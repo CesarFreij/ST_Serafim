@@ -10,6 +10,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from "@mui/material/DialogContent";
 
 function ProfileLanding({username: propUsername}) {
     let points = 0;
@@ -17,12 +18,15 @@ function ProfileLanding({username: propUsername}) {
     const [verse, setVerse] = useState("");
     const [isLoading, setIsloading] = useState(false);
     const [isLoadingPoints, setIsloadingPoints] = useState(false);
+    const [confirm, setConfirm] = useState(false);
+    const [selectedTodo, setSelectedTodo] = useState("");
+    const [pendingTodo, setPendingTodo] = useState("");
     const navigate = useNavigate();
     const { enqueueSnackbar } = useSnackbar();
     const [point, setPoints] = useState([]);
+    const [p, setP] = useState(0);
     const [OpenPoints, setOpenPoints] = useState(false);
 
-    const handleOpenPoints = _ => setOpenPoints(false);
     useEffect(() => {
         async function fetchVerse() {
             const quote = await getVerse();
@@ -52,30 +56,45 @@ function ProfileLanding({username: propUsername}) {
         };
     }, []);
 
-    async function handlePoints(e) {
+    function handlePoints(e) {
         e.preventDefault();
         const element = e.currentTarget.id;
+        setSelectedTodo(element === 'الكتاب-المقدس' ? 'الكتاب المقدس' : element);
         switch(element) {
-            case 'الصلاة': 
-                points = 30; break;
-            case 'الصوم': 
-                points = 40; break;
-            case 'الصديق': 
-                points = 1000; break;
-            case 'الكتاب-المقدس': 
-                points = 30; break;
-            case 'الكنيسة': 
-                points = 50; break;
-            default : 
-                console.error('error');
-            }
+            case 'الصلاة': points = 30; break;
+            case 'الصوم': points = 40; break;
+            case 'الصديق': points = 1000; break;
+            case 'الكتاب-المقدس': points = 30; break;
+            case 'الكنيسة': points = 50; break;
+            default : console.error('error');
+        }
+        setP(points);
+        setPendingTodo(element);
+        setConfirm(true);
+    }
 
+    async function handleAddPoints() {
+        setConfirm(false);
+        switch(pendingTodo) {
+        case 'الصلاة': 
+            points = 30; break;
+        case 'الصوم': 
+            points = 40; break;
+        case 'الصديق': 
+            points = 1000; break;
+        case 'الكتاب-المقدس': 
+            points = 30; break;
+        case 'الكنيسة': 
+            points = 50; break;
+        default : 
+            console.error('error');
+        }
         try {
             setIsloading(true);
             const response = await api.post('/add-points', {
                 username: sessionStorage.getItem("username"),
                 points,
-                todo: element
+                todo: pendingTodo
             });
             enqueueSnackbar(response.data.message, {variant: "success", style:{width: 'fit-content'}})
         } catch (error) {
@@ -126,22 +145,43 @@ return (
         <div id="wrapper">
             <div id="bg"></div>
             <div id="overlay"></div>
-                <p style={{
-                    position: "relative",
-                    zIndex: 9999,
-                    fontSize: "25px",
-                    padding: "20px",
-                    margin: "20px",
-                    backgroundColor: "#ffa5004f",
-                    borderRadius: "20px",
-                }}>
-                    {verse}
-                </p>
-
+            <p style={{
+                position: "relative",
+                zIndex: 9999,
+                fontSize: "25px",
+                padding: "20px",
+                margin: "20px",
+                backgroundColor: "#ffa5004f",
+                borderRadius: "20px",
+            }}>
+                {verse}
+            </p>
+            <Dialog 
+                sx={{margin: 0}}
+                open={confirm}
+                onClose={_ => setConfirm(false)}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+                disableEnforceFocus
+                disableRestoreFocus
+                >
+                <DialogTitle id="alert-dialog-title" sx={{fontWeight: 'bold', paddingBottom: 0, textAlign: 'end'}}>
+                    {`هل أنت متأكد من الضغط على زر ${selectedTodo}؟`}
+                </DialogTitle>
+                <DialogContent sx={{alignSelf: 'flex-end'}}>
+                    !سيتم إضافة{" "}
+                    <span style={{ fontWeight: "bold" }}>{p}</span>
+                    {"$ "}إلى رصيدك
+                </DialogContent>
+                <DialogActions sx={{display: 'flex', justifyContent: 'center'}}>
+                    <Button variant="contained" onClick={_ => setConfirm(false)} color="error" sx={{width: '100%'}}>إلغاء</Button>
+                    <Button variant="contained" onClick={_ => handleAddPoints(true)} color="success" sx={{width: '100%'}}>إضافة</Button>
+                </DialogActions>
+            </Dialog>
             <div id="main">
                 <Dialog
                     open={OpenPoints}
-                    onClose={handleOpenPoints}
+                    onClose={ _ => setOpenPoints(false)}
                     aria-labelledby="alert-dialog-title"
                     aria-describedby="alert-dialog-description"
                     disableEnforceFocus
@@ -152,12 +192,12 @@ return (
                         {point}
                     </DialogTitle>
                     <DialogActions sx={{display: 'flex', justifyContent: 'center'}}>
-                        <Button onClick={_ => setOpenPoints(false)} sx={{color: '#ffa600ff'}}>تم</Button>
+                        <Button onClick={_ => setOpenPoints(false)} sx={{color: '#ffa600ff', width: '100%'}}>تم</Button>
                     </DialogActions>
                 </Dialog>
                 {/* Header */}
-                <header id="header">
-                    {isLoading ? <CircularProgress sx={{ color: "#ffa5004f" }}/> : ''}
+                <header id="header" style={{maxWidth: 300}}>
+                    {isLoading ? <CircularProgress sx={{ color: "#ffa600ff" }}/> : ''}
                     <h1>{username}</h1>
                     <nav>
                         <ul>
